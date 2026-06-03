@@ -12,8 +12,8 @@ void LED_Init(void) {
   GPIOA->ODR &= ~GPIO_ODR_OD5;
 }
 
-void LED_On(void) { GPIOA->ODR &= ~GPIO_ODR_OD5; }
+void LED_On(void) { GPIOA->ODR |= GPIO_ODR_OD5; }
 
-void LED_Off(void) { GPIOA->ODR |= GPIO_ODR_OD5; }
+void LED_Off(void) { GPIOA->ODR &= ~GPIO_ODR_OD5; }
 
 void LED_Toggle(void) { GPIOA->ODR ^= GPIO_ODR_OD5; }
