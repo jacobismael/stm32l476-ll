@@ -146,8 +146,7 @@ void I2C_Stop(I2C_TypeDef *I2Cx) {
   // Master: Generate STOP bit after the current byte has been transferred
   I2Cx->CR2 |= I2C_CR2_STOP;
   // Wait until STOPF flag is reset
-  while ((I2Cx->ISR & I2C_ISR_STOPF) == 0)
-    ;
+  while ((I2Cx->ISR & I2C_ISR_STOPF) == 0);
 }
 
 //===============================================================================
@@ -155,8 +154,7 @@ void I2C_Stop(I2C_TypeDef *I2Cx) {
 //===============================================================================
 void I2C_WaitLineIdle(I2C_TypeDef *I2Cx) {
   // Wait until I2C bus is ready
-  while ((I2Cx->ISR & I2C_ISR_BUSY) == I2C_ISR_BUSY)
-    ; // If busy, wait
+  while ((I2Cx->ISR & I2C_ISR_BUSY) == I2C_ISR_BUSY); // If busy, wait
 }
 
 //===============================================================================
@@ -188,16 +186,14 @@ int8_t I2C_SendData(I2C_TypeDef *I2Cx, uint8_t DeviceAddress, uint8_t *pData,
     // data to be transmitted must be written in the I2C_TXDR register. It is
     // cleared when the next data to be sent is written in the I2C_TXDR
     // register. The TXIS flag is not set when a NACK is received.
-    while ((I2Cx->ISR & I2C_ISR_TXIS) == 0)
-      ;
+    while ((I2Cx->ISR & I2C_ISR_TXIS) == 0);
     I2Cx->TXDR =
         pData[i] &
         I2C_TXDR_TXDATA; // TXE is cleared by writing to the TXDR register.
   }
 
   // Wait until TC flag is set
-  while ((I2Cx->ISR & I2C_ISR_TC) == 0 && (I2Cx->ISR & I2C_ISR_NACKF) == 0)
-    ;
+  while ((I2Cx->ISR & I2C_ISR_TC) == 0 && (I2Cx->ISR & I2C_ISR_NACKF) == 0);
 
   if ((I2Cx->ISR & I2C_ISR_NACKF) != 0)
     return -1;
@@ -224,14 +220,12 @@ int8_t I2C_ReceiveData(I2C_TypeDef *I2Cx, uint8_t DeviceAddress, uint8_t *pData,
 
   for (i = 0; i < Size; i++) {
     // Wait until RXNE flag is set
-    while ((I2Cx->ISR & I2C_ISR_RXNE) == 0)
-      ;
+    while ((I2Cx->ISR & I2C_ISR_RXNE) == 0);
     pData[i] = I2Cx->RXDR & I2C_RXDR_RXDATA;
   }
 
   // Wait until TCR flag is set
-  while ((I2Cx->ISR & I2C_ISR_TC) == 0)
-    ;
+  while ((I2Cx->ISR & I2C_ISR_TC) == 0);
 
   I2C_Stop(I2Cx);
 

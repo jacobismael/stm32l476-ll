@@ -1,23 +1,22 @@
-#include "jtest.h"
 #include "basic_math_test_group.h"
 #include "complex_math_test_group.h"
 #include "controller_test_group.h"
 #include "fast_math_test_group.h"
 #include "filtering_test_group.h"
+#include "intrinsics_test_group.h"
+#include "jtest.h"
 #include "matrix_test_group.h"
 #include "statistics_test_group.h"
 #include "support_test_group.h"
 #include "transform_test_group.h"
-#include "intrinsics_test_group.h"
 
-JTEST_DEFINE_GROUP(all_tests)
-{
+JTEST_DEFINE_GROUP(all_tests) {
   /*
     To skip a test, comment it out
   */
 #if !defined(CUSTOMIZE_TESTS) || defined(ENABLE_BASICMATH_TESTS)
   JTEST_GROUP_CALL(basic_math_tests);
-#endif 
+#endif
 
 #if !defined(CUSTOMIZE_TESTS) || defined(ENABLE_COMPLEXMATH_TESTS)
   JTEST_GROUP_CALL(complex_math_tests);
@@ -40,7 +39,7 @@ JTEST_DEFINE_GROUP(all_tests)
 
 #if !defined(CUSTOMIZE_TESTS) || defined(ENABLE_MATRIX_TESTS)
   JTEST_GROUP_CALL(matrix_tests);
-#endif 
+#endif
 
 #if !defined(CUSTOMIZE_TESTS) || defined(ENABLE_STATISTICS_TESTS)
   JTEST_GROUP_CALL(statistics_tests);

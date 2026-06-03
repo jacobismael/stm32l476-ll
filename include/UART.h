@@ -4,9 +4,9 @@
 #include "stm32l476xx.h"
 
 #define BufferSize 32
+#define NUM_UART 2
 
-void UART1_Init(void);
-void UART2_Init(void);
+void UART_Init(uint8_t uart, uint32_t baud_rate);
 void UART1_GPIO_Init(void);
 void UART2_GPIO_Init(void);
 

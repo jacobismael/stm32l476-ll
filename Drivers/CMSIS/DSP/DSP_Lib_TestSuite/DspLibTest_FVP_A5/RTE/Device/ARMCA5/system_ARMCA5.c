@@ -29,7 +29,7 @@
 #include CMSIS_device_header
 #include "irq_ctrl.h"
 
-#define  SYSTEM_CLOCK  12000000U
+#define SYSTEM_CLOCK 12000000U
 
 /*----------------------------------------------------------------------------
   System Core Clock Variable
@@ -39,18 +39,14 @@ uint32_t SystemCoreClock = SYSTEM_CLOCK;
 /*----------------------------------------------------------------------------
   System Core Clock update function
  *----------------------------------------------------------------------------*/
-void SystemCoreClockUpdate (void)
-{
-  SystemCoreClock = SYSTEM_CLOCK;
-}
+void SystemCoreClockUpdate(void) { SystemCoreClock = SYSTEM_CLOCK; }
 
 /*----------------------------------------------------------------------------
   System Initialization
  *----------------------------------------------------------------------------*/
-void SystemInit (void)
-{
-/* do not use global variables because this function is called before
-   reaching pre-main. RW section may be overwritten afterwards.          */
+void SystemInit(void) {
+  /* do not use global variables because this function is called before
+     reaching pre-main. RW section may be overwritten afterwards.          */
 
   // Invalidate entire Unified TLB
   __set_TLBIALL(0);
@@ -83,7 +79,7 @@ void SystemInit (void)
   L1C_EnableCaches();
   L1C_EnableBTAC();
 
-#if (__L2C_PRESENT == 1) 
+#if (__L2C_PRESENT == 1)
   // Enable GIC
   L2C_Enable();
 #endif

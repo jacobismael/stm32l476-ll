@@ -1,161 +1,132 @@
-######################################
-# target
-######################################
-TARGET = main
+EXAMPLE ?= blinky
+TARGET  := $(EXAMPLE)
 
-######################################
-# build settings
-######################################
-DEBUG = 1
-OPT = -O0
+BUILD_DIR     := build/$(EXAMPLE)
+SRC_DIR       := src
+INC_DIR       := include
+EXAMPLE_DIR   := examples
+STM32L476_DIR := stm32l476
 
-######################################
-# paths
-######################################
-BUILD_DIR = build
-SRC_DIR = src
+EXAMPLE_SRC := $(EXAMPLE_DIR)/$(EXAMPLE).c
 
-######################################
-# source files
-######################################
-C_SOURCES = $(wildcard $(SRC_DIR)/*.c)
+PREFIX ?= arm-none-eabi-
 
-ASM_SOURCES =  \
-startup_stm32l476xx.s
+CC      := $(PREFIX)gcc
+AS      := $(PREFIX)gcc -x assembler-with-cpp
+OBJCOPY := $(PREFIX)objcopy
+SIZE    := $(PREFIX)size
+OBJDUMP := $(PREFIX)objdump
 
-######################################
-# tools
-######################################
-PREFIX = arm-none-eabi-
+OPENOCD ?= openocd
 
-ifdef GCC_PATH
-CC = $(GCC_PATH)/$(PREFIX)gcc
-AS = $(GCC_PATH)/$(PREFIX)gcc -x assembler-with-cpp
-CP = $(GCC_PATH)/$(PREFIX)objcopy
-SZ = $(GCC_PATH)/$(PREFIX)size
-else
-CC = $(PREFIX)gcc
-AS = $(PREFIX)gcc -x assembler-with-cpp
-CP = $(PREFIX)objcopy
-SZ = $(PREFIX)size
+MCU := \
+	-mcpu=cortex-m4 \
+	-mthumb \
+	-mfpu=fpv4-sp-d16 \
+	-mfloat-abi=hard
+
+C_SOURCES := \
+	$(wildcard $(SRC_DIR)/*.c) \
+	$(EXAMPLE_SRC)
+
+ASM_SOURCES := \
+	$(STM32L476_DIR)/startup_stm32l476xx.s
+
+ifeq ($(wildcard $(EXAMPLE_SRC)),)
+$(error Example '$(EXAMPLE)' does not exist. Expected $(EXAMPLE_SRC))
 endif
 
-HEX = $(CP) -O ihex
-BIN = $(CP) -O binary -S
+CPPFLAGS := \
+	-DSTM32L476xx \
+	-I$(INC_DIR) \
+	-I$(STM32L476_DIR) \
+	-IDrivers/CMSIS/Core/Include \
+	-IDrivers/CMSIS/Device/ST/STM32L4xx/Include
 
-######################################
-# MCU
-######################################
-CPU = -mcpu=cortex-m4
-FPU = -mfpu=fpv4-sp-d16
-FLOAT_ABI = -mfloat-abi=hard
+CFLAGS := \
+	$(MCU) \
+	-O0 \
+	-g3 \
+	-Wall \
+	-Wextra \
+	-Wpedantic \
+	-std=gnu11 \
+	-ffunction-sections \
+	-fdata-sections \
+	-fno-common \
+	-MMD \
+	-MP
 
-MCU = $(CPU) -mthumb $(FPU) $(FLOAT_ABI)
+ASFLAGS := \
+	$(MCU) \
+	-g3
 
-######################################
-# defines
-######################################
-C_DEFS =  \
--DSTM32L476xx
+LDSCRIPT := $(STM32L476_DIR)/STM32L476XX_FLASH.ld
 
-AS_DEFS =
+LDFLAGS := \
+	$(MCU) \
+	-T$(LDSCRIPT) \
+	-specs=nano.specs \
+	-specs=nosys.specs \
+	-Wl,-Map=$(BUILD_DIR)/$(TARGET).map \
+	-Wl,--gc-sections
 
-######################################
-# includes
-######################################
-C_INCLUDES =  \
--I. \
--ICore/Inc \
--IDrivers/CMSIS/Core/Include \
--IDrivers/CMSIS/Device/ST/STM32L4xx/Include
+LDLIBS := \
+	-Wl,--start-group \
+	-lc \
+	-lm \
+	-lnosys \
+	-Wl,--end-group
 
-AS_INCLUDES =  \
--I. \
--IDrivers/CMSIS/Core/Include \
--IDrivers/CMSIS/Device/ST/STM32L4xx/Include
+ELF := $(BUILD_DIR)/$(TARGET).elf
+HEX := $(BUILD_DIR)/$(TARGET).hex
+BIN := $(BUILD_DIR)/$(TARGET).bin
+LST := $(BUILD_DIR)/$(TARGET).lst
 
-######################################
-# compiler flags
-######################################
-CFLAGS = $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) \
--Wall \
--Wextra \
--std=gnu11 \
--fdata-sections \
--ffunction-sections \
--MMD -MP -MF"$(@:%.o=%.d)"
+OBJECTS := \
+	$(patsubst %.c,$(BUILD_DIR)/%.o,$(C_SOURCES)) \
+	$(patsubst %.s,$(BUILD_DIR)/%.o,$(ASM_SOURCES))
 
-ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) \
--Wall \
--fdata-sections \
--ffunction-sections
+DEPS := $(OBJECTS:.o=.d)
 
-ifeq ($(DEBUG), 1)
-CFLAGS += -g3 -gdwarf-2
-ASFLAGS += -g3 -gdwarf-2
-endif
+all: $(ELF) $(HEX) $(BIN)
 
-######################################
-# linker
-######################################
-LDSCRIPT = STM32L476XX_FLASH.ld
+$(BUILD_DIR)/%.o: %.c Makefile
+	@mkdir -p $(dir $@)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-LIBS = -lc -lm -lnosys
+$(BUILD_DIR)/%.o: %.s Makefile
+	@mkdir -p $(dir $@)
+	$(AS) $(CPPFLAGS) $(ASFLAGS) -c $< -o $@
 
-LDFLAGS = $(MCU) \
--specs=nano.specs \
--specs=nosys.specs \
--T$(LDSCRIPT) \
--Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref \
--Wl,--gc-sections \
--Wl,--print-memory-usage \
--u _printf_float
+$(ELF): $(OBJECTS) $(LDSCRIPT)
+	@mkdir -p $(dir $@)
+	$(CC) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $@
+	$(SIZE) $@
 
-######################################
-# build rules
-######################################
-all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
+$(HEX): $(ELF)
+	$(OBJCOPY) -O ihex $< $@
 
-OBJECTS = $(addprefix $(BUILD_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
-vpath %.c $(sort $(dir $(C_SOURCES)))
+$(BIN): $(ELF)
+	$(OBJCOPY) -O binary -S $< $@
 
-OBJECTS += $(addprefix $(BUILD_DIR)/,$(notdir $(ASM_SOURCES:.s=.o)))
-vpath %.s $(sort $(dir $(ASM_SOURCES)))
+$(LST): $(ELF)
+	$(OBJDUMP) -h -S $< > $@
 
-$(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
-	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
-
-$(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
-	$(AS) -c $(ASFLAGS) $< -o $@
-
-$(BUILD_DIR)/$(TARGET).elf: $(OBJECTS) Makefile
-	$(CC) $(OBJECTS) $(LDFLAGS) $(LIBS) -o $@
-	$(SZ) $@
-
-$(BUILD_DIR)/%.hex: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(HEX) $< $@
-
-$(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
-	$(BIN) $< $@
-
-$(BUILD_DIR):
-	mkdir -p $@
-
-######################################
-# flash with OpenOCD
-######################################
 flash: all
-	openocd -f board/st_nucleo_l4.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
+	$(OPENOCD) -f board/st_nucleo_l4.cfg \
+		-c "program $(ELF) verify reset exit"
 
-######################################
-# clean
-######################################
+run: flash
+
+list: $(LST)
+
+size: $(ELF)
+	$(SIZE) $(ELF)
+
 clean:
-	-rm -fR $(BUILD_DIR)
+	rm -rf build
 
-######################################
-# dependencies
-######################################
--include $(wildcard $(BUILD_DIR)/*.d)
+-include $(DEPS)
 
-.PHONY: all clean flash
+.PHONY: all flash run list size clean

@@ -70,16 +70,13 @@ void SPI1_Init(void) {
 
 uint16_t SPI_Transfer_Data(uint16_t write_data) {
   // Wait for TXE (Transmit buffer empty)
-  while (!(SPI1->SR & SPI_SR_TXE))
-    ;
+  while (!(SPI1->SR & SPI_SR_TXE));
   // Write data
   SPI1->DR = write_data;
   // Wait for not busy
-  while (SPI1->SR & SPI_SR_BSY)
-    ;
+  while (SPI1->SR & SPI_SR_BSY);
   // Wait for RXNE (Receive buffer not empty)
-  while (!(SPI1->SR & SPI_SR_RXNE))
-    ;
+  while (!(SPI1->SR & SPI_SR_RXNE));
   // Read data
   return SPI1->DR;
 }

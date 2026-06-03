@@ -35,7 +35,6 @@ void delay(uint32_t ms) {
   SysTick->LOAD = 79999;
   SysTick->VAL = 0;
   SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;
-  while (step < ms)
-    ;
+  while (step < ms);
   SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;
 }

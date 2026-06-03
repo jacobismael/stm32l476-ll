@@ -7,7 +7,6 @@
 #include "stm32l476xx.h"
 #include <stdio.h>
 
-
 int main(void) {
   // Switch System Clock = 80 MHz
   System_Clock_Init();

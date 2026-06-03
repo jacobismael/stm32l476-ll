@@ -186,7 +186,8 @@ void arm_radix4_butterfly_q15(q15_t *pSrc16, uint32_t fftLen,
                             alternative takes 3 cycles */
                          /*
                              in = ((int16_t) (T & 0xFFFF)) >> 2;       // alternative code that takes
-                            3 cycles                      T = ((T >> 2) & 0xFFFF0000) | (in & 0xFFFF);
+                            3 cycles                      T = ((T >> 2) & 0xFFFF0000) | (in &
+                            0xFFFF);
                          */
 
     /* Read yc (real), xc(imag) input */

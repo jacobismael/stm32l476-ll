@@ -16,8 +16,7 @@ void System_Clock_Init(void) {
 
   // Enable the Internal High Speed oscillator (HSI
   RCC->CR |= RCC_CR_HSION;
-  while ((RCC->CR & RCC_CR_HSIRDY) == 0)
-    ;
+  while ((RCC->CR & RCC_CR_HSIRDY) == 0);
   // Adjusts the Internal High Speed oscillator (HSI) calibration value
   // RC oscillator frequencies are factory calibrated by ST for 1 % accuracy at
   // 25oC After reset, the factory calibration value is loaded in HSICAL[7:0] of
@@ -28,8 +27,7 @@ void System_Clock_Init(void) {
   RCC->ICSCR |= HSITrim << 24;
 
   RCC->CR &= ~RCC_CR_PLLON;
-  while ((RCC->CR & RCC_CR_PLLRDY) == RCC_CR_PLLRDY)
-    ;
+  while ((RCC->CR & RCC_CR_PLLRDY) == RCC_CR_PLLRDY);
 
   // Select clock source to PLL
   RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLSRC;
@@ -50,16 +48,14 @@ void System_Clock_Init(void) {
   RCC->PLLCFGR |= RCC_PLLCFGR_PLLREN; // Enable Main PLL PLLCLK output
 
   RCC->CR |= RCC_CR_PLLON;
-  while ((RCC->CR & RCC_CR_PLLRDY) == 0)
-    ;
+  while ((RCC->CR & RCC_CR_PLLRDY) == 0);
 
   // Select PLL selected as system clock
   RCC->CFGR &= ~RCC_CFGR_SW;
   RCC->CFGR |= RCC_CFGR_SW_PLL; // 00: MSI, 01:HSI, 10: HSE, 11: PLL
 
   // Wait until System Clock has been selected
-  while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL)
-    ;
+  while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
 
   // The maximum frequency of the AHB, the APB1 and the APB2 domains is 80 MHz.
   RCC->CFGR &= ~RCC_CFGR_HPRE; // AHB prescaler = 1; SYSCLK not divided
@@ -77,8 +73,7 @@ void System_Clock_Init(void) {
   // output enable
 
   RCC->CR &= ~RCC_CR_PLLSAI1ON; // SAI1 PLL enable
-  while ((RCC->CR & RCC_CR_PLLSAI1ON) == RCC_CR_PLLSAI1ON)
-    ;
+  while ((RCC->CR & RCC_CR_PLLSAI1ON) == RCC_CR_PLLSAI1ON);
 
   // Configure and enable PLLSAI1 clock to generate 11.294MHz
   // 8 MHz * 24 / 17 = 11.294MHz
@@ -106,8 +101,7 @@ void System_Clock_Init(void) {
   // RCC->PLLSAI1CFGR |= RCC_PLLSAI1CFGR_PLLSAI1REN;
 
   RCC->CR |= RCC_CR_PLLSAI1ON; // SAI1 PLL enable
-  while ((RCC->CR & RCC_CR_PLLSAI1ON) == 0)
-    ;
+  while ((RCC->CR & RCC_CR_PLLSAI1ON) == 0);
 
   // SAI1 clock source selection
   // 00: PLLSAI1 "P" clock (PLLSAI1CLK) selected as SAI1 clock
