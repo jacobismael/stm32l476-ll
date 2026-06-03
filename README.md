@@ -1,6 +1,6 @@
 # STM32l476 Nucleo LL Driver
 
-Macro functions for the STM32L476 Peripherals
+Macro functions for the STM32L476 Peripherals. This repository contains custom bare-metal register-level drivers for the STM32L476. It does not use the STM32Cube HAL or the official STM32Cube LL API.
 
 ## Features
 - ADC
