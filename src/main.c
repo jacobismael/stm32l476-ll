@@ -15,6 +15,7 @@ int main(void) {
   LED_Init();
 
   while (1) {
+    // Sample Blinky
     LED_Toggle();
     delay(1000);
   }
