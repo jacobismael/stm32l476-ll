@@ -1,6 +1,8 @@
 # STM32l476 Nucleo LL Driver
 
-Macro functions for the STM32L476 Peripherals. This repository contains custom bare-metal register-level drivers for the STM32L476. It does not use the STM32Cube HAL or the official STM32Cube LL API.
+Macro functions for the STM32L476 Peripherals. This repository contains custom bare-metal register-level drivers for the STM32L476. It does not use the STM32Cube HAL or the official STM32Cube LL API. Peripheral registers are configured directly using CMSIS device definitions.
+
+The project is tested on the NUCLEO-L476RG development board.
 
 ## Features
 - ADC
@@ -20,27 +22,41 @@ Macro functions for the STM32L476 Peripherals. This repository contains custom b
 | SPI | SPI1 | PA4 NSS, PB3 SCK, PB4 MISO, PB5 MOSI | PB3 may conflict with SWO |
 | SysTick | Cortex-M SysTick | — | Blocking millisecond delay |
 
-## Template
-The following is a sample LED blinky program.
-```c
-int main(void) {
-  // Switch System Clock = 80 MHz
-  System_Clock_Init();
-  SysTick_Init();
-  LED_Init();
+## Configurable Fault Handler
 
-  while (1) {
-    // Sample Blinky
-    LED_Toggle();
-    delay(1000);
-  }
-}
+Drivers report errors through a common `fault()` function.The application can define where fault messages are sent by registering a callback:
+```c
+void set_fault_handler(fault_handler_t handler);
+void fault(const char *message);
 ```
+The callback can be configured to send messages to UART, store them in memory, display them on a screen, or halt execution.
+
+### Panic
+A panic macro is also configurable similar to fault. Unlike fault, panic cannot return.
+```c
+void set_panic_handler(panic_handler_t handler);
+_Noreturn void panic(const char *message);
+```
+
+## Prerequisites
+
+Install the following tools:
+
+- GNU Arm Embedded Toolchain
+- OpenOCD
+
+The Makefile expects the Arm compiler binaries to use the arm-none-eabi- prefix.
 
 ## Build
 Compile with Make. Flash using:
-```
+```bash
 make flash
 ```
 
 This will use the STLink (On-board for the Nucleo Dev board)
+
+Build a specific example by setting EXAMPLE to the file name without the .c extension:
+```bash
+make EXAMPLE=uart_trx
+make EXAMPLE=adc_poll
+```
